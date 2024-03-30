@@ -128,6 +128,7 @@ impl From<StrafeType> for hltas_cpp::StrafeType {
             MaxDeccel => Self::MAXDECCEL,
             ConstSpeed => Self::CONSTSPEED,
             ConstYawspeed(_) => Self::CONSTYAWSPEED,
+            AcceleratedYawspeed(_, _) => Self::ACCELYAWSPEED,
         }
     }
 }
@@ -142,6 +143,7 @@ impl From<hltas_cpp::StrafeType> for StrafeType {
             MAXDECCEL => Self::MaxDeccel,
             CONSTSPEED => Self::ConstSpeed,
             CONSTYAWSPEED => Self::ConstYawspeed(0.),
+            ACCELYAWSPEED => Self::AcceleratedYawspeed(0., 0.),
         }
     }
 }
@@ -172,6 +174,9 @@ impl From<read::Context> for hltas_cpp::ErrorCode {
             NoYawspeed => NO_YAWSPEED,
             UnsupportedConstantYawspeedDir => UNSUPPORTED_YAWSPEED_DIR,
             NegativeYawspeed => NEGATIVE_YAWSPEED_VALUE,
+            NoAccelerationYawspeed => NO_ACCELERATION_YAWSPEED,
+            NegativeAccelerationYawspeed => NEGATIVE_ACCELERATION_YAWSPEED,
+            UnsupportedAccelYawspeedDir => UNSUPPORTED_ACCEL_YAWSPEED_DIR,
         }
     }
 }
@@ -443,6 +448,14 @@ pub unsafe fn hltas_frame_from_non_comment_line(
                     if let StrafeType::ConstYawspeed(yawspeed) = type_ {
                         frame.YawPresent = true;
                         frame.Yawspeed = f64::from(yawspeed);
+                    }
+
+                    if let StrafeType::AcceleratedYawspeed(target, accel) = type_ {
+                        // What is the use case of yaw present? Seems unnecessary.
+                        // It is very likely that no one prefers console commands.
+                        // frame.YawPresent = true;
+                        frame.TargetYawspeed = f64::from(target);
+                        frame.Acceleration = f64::from(accel);
                     }
 
                     match dir {
@@ -1009,6 +1022,10 @@ unsafe fn hltas_rs_to_writer(
                     hltas_cpp::StrafeType::CONSTYAWSPEED => {
                         StrafeType::ConstYawspeed(frame.Yawspeed as f32)
                     }
+                    hltas_cpp::StrafeType::ACCELYAWSPEED => StrafeType::AcceleratedYawspeed(
+                        frame.TargetYawspeed as f32,
+                        frame.Acceleration as f32,
+                    ),
                     _ => frame.Type.into(),
                 },
                 dir: match frame.Dir {

@@ -37,6 +37,7 @@ fn strafe_type(i: &str) -> IResult<StrafeType> {
         map(char('2'), |_| StrafeType::MaxDeccel),
         map(char('3'), |_| StrafeType::ConstSpeed),
         map(char('4'), |_| StrafeType::ConstYawspeed(0.)),
+        map(char('5'), |_| StrafeType::AcceleratedYawspeed(0., 0.)),
     ))(i)
 }
 
@@ -334,12 +335,51 @@ fn yaw_field<'a>(
                 _ => (type_, false),
             };
 
+            let (type_, is_accelerated_yawspeed) = match type_ {
+                StrafeType::AcceleratedYawspeed(_, _) => {
+                    context(
+                        Context::NoYawspeed,
+                        not(pair(not(recognize_float), char('-'))),
+                    )(i)?;
+                    context(
+                        Context::NegativeYawspeed,
+                        not(pair(char('-'), recognize_float)),
+                    )(i)?;
+                    context(
+                        Context::NoAccelerationYawspeed,
+                        not(preceded(
+                            recognize_float,
+                            not(preceded(space1, recognize_float)),
+                        )),
+                    )(i)?;
+                    context(
+                        Context::NegativeAccelerationYawspeed,
+                        not(preceded(
+                            recognize_float,
+                            preceded(space1, pair(char('-'), recognize_float)),
+                        )),
+                    )(i)?;
+
+                    let (_, (target_yawspeed, acceleration)) =
+                        peek(tuple((float, preceded(space1, float))))(i)?;
+                    (
+                        StrafeType::AcceleratedYawspeed(target_yawspeed, acceleration),
+                        true,
+                    )
+                }
+                _ => (type_, false),
+            };
+
             match dir {
                 StrafeDir::Yaw(_) => {
                     context(Context::NoYaw, not(pair(not(recognize_float), char('-'))))(i)?;
 
                     if is_constant_yawspeed {
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
+                    }
+
+                    if is_accelerated_yawspeed {
+                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, yaw) = float(i)?;
@@ -358,6 +398,10 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
+                    if is_accelerated_yawspeed {
+                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    }
+
                     let (i, yaw) = float(i)?;
                     Ok((
                         i,
@@ -372,6 +416,10 @@ fn yaw_field<'a>(
 
                     if is_constant_yawspeed {
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
+                    }
+
+                    if is_accelerated_yawspeed {
+                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, (x, y)) = separated_pair(float, space1, float)(i)?;
@@ -393,6 +441,10 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
+                    if is_accelerated_yawspeed {
+                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    }
+
                     let (i, count) = non_zero_u32(i)?;
                     Ok((
                         i,
@@ -412,6 +464,10 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
+                    if is_accelerated_yawspeed {
+                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    }
+
                     let (i, count) = non_zero_u32(i)?;
                     Ok((
                         i,
@@ -425,9 +481,12 @@ fn yaw_field<'a>(
                     // Skip the field if constant yawspeed and side strafing.
                     let (i, _) = if is_constant_yawspeed {
                         recognize_float(i)?
+                    } else if is_accelerated_yawspeed {
+                        preceded(pair(recognize_float, space1), recognize_float)(i)?
                     } else {
                         tag("-")(i)?
                     };
+
                     Ok((i, Some(AutoMovement::Strafe(StrafeSettings { type_, dir }))))
                 }
             }
@@ -1040,5 +1099,29 @@ mod tests {
         // https://github.com/Geal/nom/issues/1021
         let input = "target_yaw 0elocity +-0.1";
         let _ = line_target_yaw(input);
+    }
+
+    #[test]
+    fn accelerated_yawspeed_parse() {
+        let input = "69 78.69";
+
+        yaw_field(Some(AutoMovement::Strafe(StrafeSettings {
+            type_: StrafeType::AcceleratedYawspeed(0., 0.),
+            dir: StrafeDir::Left,
+        })))(input)
+        .unwrap()
+        .1
+        .map(|what| {
+            if let AutoMovement::Strafe(StrafeSettings { type_, .. }) = what {
+                if let StrafeType::AcceleratedYawspeed(target_yaw, accel) = type_ {
+                    assert_eq!(target_yaw, 69.0);
+                    assert_eq!(accel, 78.69)
+                } else {
+                    unreachable!()
+                }
+            } else {
+                unreachable!()
+            }
+        });
     }
 }

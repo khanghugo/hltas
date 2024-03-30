@@ -253,6 +253,10 @@ pub enum StrafeType {
     ConstSpeed,
     /// Turn with constant rate.
     ConstYawspeed(f32),
+    /// Turn with accelerated rate.
+    ///
+    /// First value is target yaw speed, second value is acceleration.
+    AcceleratedYawspeed(f32, f32),
 }
 
 /// Direction of automatic strafing.
@@ -533,6 +537,11 @@ fn arbitrary_strafe_settings() -> impl Strategy<Value = AutoMovement> {
         if let StrafeType::ConstYawspeed(yawspeed) = x.type_ {
             x.dir = StrafeDir::Left;
             x.type_ = StrafeType::ConstYawspeed(yawspeed.abs());
+        }
+
+        if let StrafeType::AcceleratedYawspeed(target_yawspeed, accel) = x.type_ {
+            x.dir = StrafeDir::Left;
+            x.type_ = StrafeType::AcceleratedYawspeed(target_yawspeed.abs(), accel.abs());
         }
 
         AutoMovement::Strafe(x)
@@ -943,6 +952,10 @@ mod tests {
     test_error! { error_const_yawspeed_no_yaw, "const-yawspeed-no-yawspeed", NoYawspeed }
     test_error! { error_const_yawspeed_negative, "const-yawspeed-negative", NegativeYawspeed }
     test_error! { error_const_yawspeed_unsupported, "const-yawspeed-unsupported", UnsupportedConstantYawspeedDir }
+
+    test_error! { error_accel_yawspeed_no_accel, "accel-yawspeed-no-accel", NoAccelerationYawspeed }
+    test_error! { error_accel_yawspeed_negative, "accel-yawspeed-negative", NegativeAccelerationYawspeed }
+    test_error! { error_accel_yawspeed_unsupported, "accel-yawspeed-unsupported", UnsupportedAccelYawspeedDir }
 
     #[cfg(feature = "proptest1")]
     proptest! {

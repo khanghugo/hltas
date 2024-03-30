@@ -31,6 +31,7 @@ fn strafe_type<W: Write>(type_: StrafeType) -> impl SerializeFn<W> {
         MaxDeccel => string("2"),
         ConstSpeed => string("3"),
         ConstYawspeed(_) => string("4"),
+        AcceleratedYawspeed(_, _) => string("5"),
     }
 }
 
@@ -186,6 +187,9 @@ fn yaw_field<W: Write>(movement: &Option<AutoMovement>) -> impl SerializeFn<W> +
         Some(AutoMovement::SetYaw(yaw)) => display(yaw)(out),
         Some(AutoMovement::Strafe(StrafeSettings { type_, dir })) => match type_ {
             StrafeType::ConstYawspeed(yawspeed) => display(yawspeed)(out),
+            StrafeType::AcceleratedYawspeed(target_yawspeed, accel) => {
+                tuple((display(target_yawspeed), string(" "), display(accel)))(out)
+            }
             _ => match dir {
                 StrafeDir::Yaw(yaw) => display(yaw)(out),
                 StrafeDir::Point { x, y } => tuple((display(x), string(" "), display(y)))(out),

@@ -74,6 +74,12 @@ pub enum Context {
     UnsupportedConstantYawspeedDir,
     /// Negative yawspeed value.
     NegativeYawspeed,
+    /// Empty accelerated yaw speed.
+    NoAccelerationYawspeed,
+    /// Negative accelerated yaw speed.
+    NegativeAccelerationYawspeed,
+    /// Only side strafe works with accelerated yawspeed now.
+    UnsupportedAccelYawspeedDir,
 }
 
 /// `.hltas` parsing error.
@@ -138,6 +144,13 @@ impl Display for Context {
             }
             NegativeYawspeed => {
                 write!(f, "yawspeed value is negative")
+            }
+            NoAccelerationYawspeed => {
+                write!(f, "no acceleration give")
+            }
+            NegativeAccelerationYawspeed => write!(f, "acceleration yawspeed value is negative"),
+            UnsupportedAccelYawspeedDir => {
+                write!(f, "cannot pair accelerted yawspeed with current strafe dir")
             }
         }
     }

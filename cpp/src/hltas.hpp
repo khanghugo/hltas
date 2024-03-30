@@ -43,7 +43,10 @@ namespace HLTAS
 		NO_TO_IN_FROMTO_ALGORITHM,
 		NO_YAWSPEED,
 		UNSUPPORTED_YAWSPEED_DIR,
-		NEGATIVE_YAWSPEED_VALUE
+		NEGATIVE_YAWSPEED_VALUE,
+		NO_ACCELERATION_YAWSPEED,
+		NEGATIVE_ACCELERATION_YAWSPEED,
+		UNSUPPORTED_ACCEL_YAWSPEED_DIR
 	};
 
 	struct ErrorDescription {
@@ -58,7 +61,8 @@ namespace HLTAS
 		MAXANGLE,
 		MAXDECCEL,
 		CONSTSPEED,
-		CONSTYAWSPEED
+		CONSTYAWSPEED,
+		ACCELYAWSPEED
 	};
 
 	enum class StrafeDir : unsigned char {
@@ -322,6 +326,9 @@ namespace HLTAS
 			};
 			unsigned Count;
 			double Yawspeed;
+			struct {
+				double TargetYawspeed, Acceleration;
+			};
 		};
 		double Pitch;
 
@@ -503,6 +510,8 @@ extern "C" {
 		double Y;
 		unsigned Count;
 		double Yawspeed;
+		double TargetYawspeed;
+		double Acceleration;
 		double Pitch;
 		uint32_t Repeats;
 		const char* Commands;
