@@ -451,9 +451,9 @@ pub unsafe fn hltas_frame_from_non_comment_line(
                     }
 
                     if let StrafeType::AcceleratedYawspeed(target, accel) = type_ {
-                        // What is the use case of yaw present? Seems unnecessary.
-                        // It is very likely that no one prefers console commands.
-                        // frame.YawPresent = true;
+                        // Need to set this boolean and do get/set methods
+                        // so hlstrafe can directly the values.
+                        frame.YawPresent = true;
                         frame.TargetYawspeed = f64::from(target);
                         frame.Acceleration = f64::from(accel);
                     }

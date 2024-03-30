@@ -259,6 +259,18 @@ namespace HLTAS
 		return Yawspeed;
 	}
 
+	double Frame::GetAcceleratedYawspeedTarget() const
+	{
+		assert(HasAcceleratedYawspeedParams());
+		return TargetYawspeed;
+	}
+
+	double Frame::GetAcceleratedYawspeedAccel() const
+	{
+		assert(HasAcceleratedYawspeedParams());
+		return Acceleration;
+	}
+
 	double Frame::GetPitch() const
 	{
 		assert(PitchPresent);
@@ -304,6 +316,21 @@ namespace HLTAS
 		assert(!Strafe || Type == StrafeType::CONSTYAWSPEED);
 		YawPresent = true;
 		Yawspeed = value;
+	}
+
+	void Frame::SetAcceleratedYawspeedTarget(double value)
+	{
+		// I don't remember why checking for `Strafe`, let's just parrot.
+		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
+		YawPresent = true;
+		TargetYawspeed = value;
+	}
+
+	void Frame::SetAcceleratedYawspeedAccel(double value)
+	{
+		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
+		YawPresent = true;
+		Acceleration = value;
 	}
 
 	void Frame::SetPitch(double value)

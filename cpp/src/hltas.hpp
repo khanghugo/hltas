@@ -355,6 +355,11 @@ namespace HLTAS
 		void SetYawspeed(double value);
 		void SetPitch(double value);
 		void SetRepeats(unsigned value);
+		inline bool HasAcceleratedYawspeedParams() const {return YawPresent && Strafe && Type == StrafeType::ACCELYAWSPEED; }
+		double GetAcceleratedYawspeedTarget() const;
+		double GetAcceleratedYawspeedAccel() const;
+		void SetAcceleratedYawspeedTarget(double value) const;
+		void SetAcceleratedYawspeedAccel(double value) const;
 
 		std::string Commands;
 		std::string Comments;
