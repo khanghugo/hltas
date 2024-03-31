@@ -352,13 +352,6 @@ fn yaw_field<'a>(
                             not(preceded(space1, recognize_float)),
                         )),
                     )(i)?;
-                    context(
-                        Context::NegativeAccelerationYawspeed,
-                        not(preceded(
-                            recognize_float,
-                            preceded(space1, pair(char('-'), recognize_float)),
-                        )),
-                    )(i)?;
 
                     let (_, (target_yawspeed, acceleration)) =
                         peek(tuple((float, preceded(space1, float))))(i)?;
@@ -1103,7 +1096,7 @@ mod tests {
 
     #[test]
     fn accelerated_yawspeed_parse() {
-        let input = "69 78.69";
+        let input = "69 -78.69";
 
         yaw_field(Some(AutoMovement::Strafe(StrafeSettings {
             type_: StrafeType::AcceleratedYawspeed(0., 0.),
@@ -1115,7 +1108,7 @@ mod tests {
             if let AutoMovement::Strafe(StrafeSettings { type_, .. }) = what {
                 if let StrafeType::AcceleratedYawspeed(target_yaw, accel) = type_ {
                     assert_eq!(target_yaw, 69.0);
-                    assert_eq!(accel, 78.69)
+                    assert_eq!(accel, -78.69)
                 } else {
                     unreachable!()
                 }

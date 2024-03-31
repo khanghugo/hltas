@@ -256,6 +256,10 @@ pub enum StrafeType {
     /// Turn with accelerated rate.
     ///
     /// First value is target yaw speed, second value is acceleration.
+    ///
+    /// Positive acceleration means current yaw speed starts at 0 and propagates acceleration.
+    ///
+    /// Negative acceleration means current yaw speed starts at target and decreases.
     AcceleratedYawspeed(f32, f32),
 }
 
@@ -954,7 +958,6 @@ mod tests {
     test_error! { error_const_yawspeed_unsupported, "const-yawspeed-unsupported", UnsupportedConstantYawspeedDir }
 
     test_error! { error_accel_yawspeed_no_accel, "accel-yawspeed-no-accel", NoAccelerationYawspeed }
-    test_error! { error_accel_yawspeed_negative, "accel-yawspeed-negative", NegativeAccelerationYawspeed }
     test_error! { error_accel_yawspeed_unsupported, "accel-yawspeed-unsupported", UnsupportedAccelYawspeedDir }
 
     #[cfg(feature = "proptest1")]

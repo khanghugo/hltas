@@ -76,8 +76,6 @@ pub enum Context {
     NegativeYawspeed,
     /// Empty accelerated yaw speed.
     NoAccelerationYawspeed,
-    /// Negative accelerated yaw speed.
-    NegativeAccelerationYawspeed,
     /// Only side strafe works with accelerated yawspeed now.
     UnsupportedAccelYawspeedDir,
 }
@@ -148,7 +146,6 @@ impl Display for Context {
             NoAccelerationYawspeed => {
                 write!(f, "no acceleration give")
             }
-            NegativeAccelerationYawspeed => write!(f, "acceleration yawspeed value is negative"),
             UnsupportedAccelYawspeedDir => {
                 write!(f, "cannot pair accelerted yawspeed with current strafe dir")
             }

@@ -175,7 +175,6 @@ impl From<read::Context> for hltas_cpp::ErrorCode {
             UnsupportedConstantYawspeedDir => UNSUPPORTED_YAWSPEED_DIR,
             NegativeYawspeed => NEGATIVE_YAWSPEED_VALUE,
             NoAccelerationYawspeed => NO_ACCELERATION_YAWSPEED,
-            NegativeAccelerationYawspeed => NEGATIVE_ACCELERATION_YAWSPEED,
             UnsupportedAccelYawspeedDir => UNSUPPORTED_ACCEL_YAWSPEED_DIR,
         }
     }
