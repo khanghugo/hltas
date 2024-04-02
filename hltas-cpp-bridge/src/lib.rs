@@ -128,7 +128,7 @@ impl From<StrafeType> for hltas_cpp::StrafeType {
             MaxDeccel => Self::MAXDECCEL,
             ConstSpeed => Self::CONSTSPEED,
             ConstYawspeed(_) => Self::CONSTYAWSPEED,
-            AcceleratedYawspeed(_, _) => Self::ACCELYAWSPEED,
+            AcceleratedYawspeed(_, _, _) => Self::ACCELYAWSPEED,
         }
     }
 }
@@ -143,7 +143,7 @@ impl From<hltas_cpp::StrafeType> for StrafeType {
             MAXDECCEL => Self::MaxDeccel,
             CONSTSPEED => Self::ConstSpeed,
             CONSTYAWSPEED => Self::ConstYawspeed(0.),
-            ACCELYAWSPEED => Self::AcceleratedYawspeed(0., 0.),
+            ACCELYAWSPEED => Self::AcceleratedYawspeed(0., 0., 0.),
         }
     }
 }
@@ -449,10 +449,11 @@ pub unsafe fn hltas_frame_from_non_comment_line(
                         frame.Yawspeed = f64::from(yawspeed);
                     }
 
-                    if let StrafeType::AcceleratedYawspeed(target, accel) = type_ {
-                        // Need to set this boolean and do get/set methods
-                        // so hlstrafe can directly the values.
+                    if let StrafeType::AcceleratedYawspeed(start, target, accel) = type_ {
+                        // Need to set this boolean and do get/set methods,
+                        // so hlstrafe can directly access the values.
                         frame.YawPresent = true;
+                        frame.StartYawspeed = f64::from(start);
                         frame.TargetYawspeed = f64::from(target);
                         frame.Acceleration = f64::from(accel);
                     }
@@ -1022,6 +1023,7 @@ unsafe fn hltas_rs_to_writer(
                         StrafeType::ConstYawspeed(frame.Yawspeed as f32)
                     }
                     hltas_cpp::StrafeType::ACCELYAWSPEED => StrafeType::AcceleratedYawspeed(
+                        frame.StartYawspeed as f32,
                         frame.TargetYawspeed as f32,
                         frame.Acceleration as f32,
                     ),

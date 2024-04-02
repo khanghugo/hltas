@@ -92,6 +92,7 @@ namespace HLTAS
 			Yawspeed = c_frame.Yawspeed;
 		}
 		if (c_frame.Type == HLTAS::StrafeType::ACCELYAWSPEED) {
+			StartYawspeed = c_frame.StartYawspeed;
 			TargetYawspeed = c_frame.TargetYawspeed;
 			Acceleration = c_frame.Acceleration;
 		}
@@ -259,6 +260,12 @@ namespace HLTAS
 		return Yawspeed;
 	}
 
+	double Frame::GetAcceleratedYawspeedStart() const
+	{
+		assert(HasAcceleratedYawspeedParams());
+		return StartYawspeed;
+	}
+
 	double Frame::GetAcceleratedYawspeedTarget() const
 	{
 		assert(HasAcceleratedYawspeedParams());
@@ -316,6 +323,14 @@ namespace HLTAS
 		assert(!Strafe || Type == StrafeType::CONSTYAWSPEED);
 		YawPresent = true;
 		Yawspeed = value;
+	}
+
+	void Frame::SetAcceleratedYawspeedStart(double value)
+	{
+		// I don't remember why checking for `Strafe`, let's just parrot.
+		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
+		YawPresent = true;
+		StartYawspeed = value;
 	}
 
 	void Frame::SetAcceleratedYawspeedTarget(double value)
@@ -489,6 +504,7 @@ namespace HLTAS
 		       YawPresent == rhs.YawPresent &&
 		       Yaw == rhs.Yaw &&
 			   Yawspeed == rhs.Yawspeed &&
+			   StartYawspeed == rhs.StartYawspeed &&
 			   TargetYawspeed == rhs.TargetYawspeed &&
 			   Acceleration == rhs.Acceleration &&
 		       X == rhs.X &&
@@ -674,6 +690,7 @@ extern "C" int hltas_input_get_frame(const void* input, size_t index, hltas_fram
 		c_frame->Yawspeed = frame.Yawspeed;
 	}
 	if (frame.Type == HLTAS::StrafeType::ACCELYAWSPEED) {
+		c_frame->StartYawspeed = frame.StartYawspeed;
 		c_frame->TargetYawspeed = frame.TargetYawspeed;
 		c_frame->Acceleration = frame.Acceleration;
 	}

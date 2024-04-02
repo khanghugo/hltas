@@ -326,7 +326,7 @@ namespace HLTAS
 			unsigned Count;
 			double Yawspeed;
 			struct {
-				double TargetYawspeed, Acceleration;
+				double StartYawspeed, TargetYawspeed, Acceleration;
 			};
 		};
 		double Pitch;
@@ -354,9 +354,12 @@ namespace HLTAS
 		void SetYawspeed(double value);
 		void SetPitch(double value);
 		void SetRepeats(unsigned value);
+		// TODO: eh, is it necessary to have this? Right now it is just bad.
 		inline bool HasAcceleratedYawspeedParams() const {return YawPresent && Strafe && Type == StrafeType::ACCELYAWSPEED; }
+		double GetAcceleratedYawspeedStart() const;
 		double GetAcceleratedYawspeedTarget() const;
 		double GetAcceleratedYawspeedAccel() const;
+		void SetAcceleratedYawspeedStart(double value);
 		void SetAcceleratedYawspeedTarget(double value);
 		void SetAcceleratedYawspeedAccel(double value);
 
@@ -514,6 +517,7 @@ extern "C" {
 		double Y;
 		unsigned Count;
 		double Yawspeed;
+		double StartYawspeed;
 		double TargetYawspeed;
 		double Acceleration;
 		double Pitch;

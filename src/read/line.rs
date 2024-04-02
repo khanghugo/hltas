@@ -3,7 +3,7 @@ use std::{num::NonZeroU32, str::FromStr};
 use nom::{
     branch::alt,
     bytes::complete::{is_not, tag},
-    character::complete::{anychar, char, not_line_ending, space1},
+    character::complete::{anychar, char, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, fail, map, map_res, not, opt, peek, recognize, verify},
     multi::separated_list1,
     sequence::{pair, preceded, separated_pair, tuple},
@@ -37,7 +37,7 @@ fn strafe_type(i: &str) -> IResult<StrafeType> {
         map(char('2'), |_| StrafeType::MaxDeccel),
         map(char('3'), |_| StrafeType::ConstSpeed),
         map(char('4'), |_| StrafeType::ConstYawspeed(0.)),
-        map(char('5'), |_| StrafeType::AcceleratedYawspeed(0., 0.)),
+        map(char('5'), |_| StrafeType::AcceleratedYawspeed(0., 0., 0.)),
     ))(i)
 }
 
@@ -336,7 +336,8 @@ fn yaw_field<'a>(
             };
 
             let (type_, is_accelerated_yawspeed) = match type_ {
-                StrafeType::AcceleratedYawspeed(_, _) => {
+                StrafeType::AcceleratedYawspeed(_, _, _) => {
+                    // start
                     context(
                         Context::NoYawspeed,
                         not(pair(not(recognize_float), char('-'))),
@@ -345,20 +346,40 @@ fn yaw_field<'a>(
                         Context::NegativeYawspeed,
                         not(pair(char('-'), recognize_float)),
                     )(i)?;
+
+                    // target
+                    context(
+                        Context::NoYawspeed,
+                        not(preceded(
+                            pair(recognize_float, space0),
+                            not(recognize_float),
+                        )),
+                    )(i)?;
+                    context(
+                        Context::NegativeYawspeed,
+                        not(preceded(
+                            pair(recognize_float, space1),
+                            pair(char('-'), recognize_float),
+                        )),
+                    )(i)?;
+
                     context(
                         Context::NoAccelerationYawspeed,
                         not(preceded(
-                            recognize_float,
+                            tuple((recognize_float, space1, recognize_float)),
                             not(preceded(space1, recognize_float)),
                         )),
                     )(i)?;
 
-                    let (_, (target_yawspeed, acceleration)) =
-                        peek(tuple((float, preceded(space1, float))))(i)?;
-                    (
-                        StrafeType::AcceleratedYawspeed(target_yawspeed, acceleration),
-                        true,
-                    )
+                    // Reminder:
+                    // REMEMBER TO CONSUME THE VALUES DOWN BELOW IF ADDING ANYTHING NEW
+                    let (_, (start, target, accel)) = peek(tuple((
+                        float,
+                        preceded(space1, float),
+                        preceded(space1, float),
+                    )))(i)?;
+
+                    (StrafeType::AcceleratedYawspeed(start, target, accel), true)
                 }
                 _ => (type_, false),
             };
@@ -475,7 +496,14 @@ fn yaw_field<'a>(
                     let (i, _) = if is_constant_yawspeed {
                         recognize_float(i)?
                     } else if is_accelerated_yawspeed {
-                        preceded(pair(recognize_float, space1), recognize_float)(i)?
+                        preceded(
+                            tuple((
+                                recognize_float,
+                                preceded(space1, recognize_float),
+                                preceded(space1, recognize_float),
+                            )),
+                            tag(""),
+                        )(i)?
                     } else {
                         tag("-")(i)?
                     };
@@ -1096,18 +1124,19 @@ mod tests {
 
     #[test]
     fn accelerated_yawspeed_parse() {
-        let input = "69 -78.69";
+        let input = "0 69 -78.69";
 
         yaw_field(Some(AutoMovement::Strafe(StrafeSettings {
-            type_: StrafeType::AcceleratedYawspeed(0., 0.),
+            type_: StrafeType::AcceleratedYawspeed(0., 0., 0.),
             dir: StrafeDir::Left,
         })))(input)
         .unwrap()
         .1
         .map(|what| {
             if let AutoMovement::Strafe(StrafeSettings { type_, .. }) = what {
-                if let StrafeType::AcceleratedYawspeed(target_yaw, accel) = type_ {
-                    assert_eq!(target_yaw, 69.0);
+                if let StrafeType::AcceleratedYawspeed(start, target, accel) = type_ {
+                    assert_eq!(start, 0.);
+                    assert_eq!(target, 69.0);
                     assert_eq!(accel, -78.69)
                 } else {
                     unreachable!()

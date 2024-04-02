@@ -255,12 +255,16 @@ pub enum StrafeType {
     ConstYawspeed(f32),
     /// Turn with accelerated rate.
     ///
-    /// First value is target yaw speed, second value is acceleration.
+    /// (starting yawspeed, target yawspeed, acceleration)
     ///
-    /// Positive acceleration means current yaw speed starts at 0 and propagates acceleration.
+    /// Interpretation of starting and target yawspeed are up to implementation.
     ///
-    /// Negative acceleration means current yaw speed starts at target and decreases.
-    AcceleratedYawspeed(f32, f32),
+    /// Positive acceleration means current yaw speed starts at starting acceleration, increases acceleration,
+    /// then caps at target acceleration.
+    ///
+    /// Negative acceleration means current yaw speed starts at target acceleration, decreases acceleration,
+    /// then caps at starting acceleration.
+    AcceleratedYawspeed(f32, f32, f32),
 }
 
 /// Direction of automatic strafing.
@@ -543,9 +547,9 @@ fn arbitrary_strafe_settings() -> impl Strategy<Value = AutoMovement> {
             x.type_ = StrafeType::ConstYawspeed(yawspeed.abs());
         }
 
-        if let StrafeType::AcceleratedYawspeed(target_yawspeed, accel) = x.type_ {
+        if let StrafeType::AcceleratedYawspeed(start, target, accel) = x.type_ {
             x.dir = StrafeDir::Left;
-            x.type_ = StrafeType::AcceleratedYawspeed(target_yawspeed.abs(), accel.abs());
+            x.type_ = StrafeType::AcceleratedYawspeed(start.abs(), target.abs(), accel);
         }
 
         AutoMovement::Strafe(x)
@@ -957,6 +961,7 @@ mod tests {
     test_error! { error_const_yawspeed_negative, "const-yawspeed-negative", NegativeYawspeed }
     test_error! { error_const_yawspeed_unsupported, "const-yawspeed-unsupported", UnsupportedConstantYawspeedDir }
 
+    test_error! { error_accel_yawspeed_singe_yaw, "accel-yawspeed-single-yaw", NoYawspeed }
     test_error! { error_accel_yawspeed_no_accel, "accel-yawspeed-no-accel", NoAccelerationYawspeed }
     test_error! { error_accel_yawspeed_unsupported, "accel-yawspeed-unsupported", UnsupportedAccelYawspeedDir }
 
