@@ -91,9 +91,9 @@ namespace HLTAS
 		if (c_frame.Type == HLTAS::StrafeType::CONSTYAWSPEED) {
 			Yawspeed = c_frame.Yawspeed;
 		}
-		if (c_frame.Type == HLTAS::StrafeType::ACCELYAWSPEED) {
-			StartYawspeed = c_frame.StartYawspeed;
-			TargetYawspeed = c_frame.TargetYawspeed;
+		if (c_frame.Type == HLTAS::StrafeType::MAXACCELYAWOFFSET) {
+			StartYawOffset = c_frame.StartYawOffset;
+			TargetYawOffset = c_frame.TargetYawOffset;
 			Acceleration = c_frame.Acceleration;
 		}
 		Pitch = c_frame.Pitch;
@@ -260,21 +260,21 @@ namespace HLTAS
 		return Yawspeed;
 	}
 
-	double Frame::GetAcceleratedYawspeedStart() const
+	double Frame::GetMaxAccelYawOffsetStart() const
 	{
-		assert(HasAcceleratedYawspeedParams());
-		return StartYawspeed;
+		assert(HasMaxAccelYawOffsetParams());
+		return StartYawOffset;
 	}
 
-	double Frame::GetAcceleratedYawspeedTarget() const
+	double Frame::GetMaxAccelYawOffsetTarget() const
 	{
-		assert(HasAcceleratedYawspeedParams());
-		return TargetYawspeed;
+		assert(HasMaxAccelYawOffsetParams());
+		return TargetYawOffset;
 	}
 
-	double Frame::GetAcceleratedYawspeedAccel() const
+	double Frame::GetMaxAccelYawOffsetAccel() const
 	{
-		assert(HasAcceleratedYawspeedParams());
+		assert(HasMaxAccelYawOffsetParams());
 		return Acceleration;
 	}
 
@@ -325,23 +325,23 @@ namespace HLTAS
 		Yawspeed = value;
 	}
 
-	void Frame::SetAcceleratedYawspeedStart(double value)
+	void Frame::SetMaxAccelYawOffsetStart(double value)
 	{
 		// I don't remember why checking for `Strafe`, let's just parrot.
 		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
 		YawPresent = true;
-		StartYawspeed = value;
+		StartYawOffset = value;
 	}
 
-	void Frame::SetAcceleratedYawspeedTarget(double value)
+	void Frame::SetMaxAccelYawOffsetTarget(double value)
 	{
 		// I don't remember why checking for `Strafe`, let's just parrot.
 		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
 		YawPresent = true;
-		TargetYawspeed = value;
+		TargetYawOffset = value;
 	}
 
-	void Frame::SetAcceleratedYawspeedAccel(double value)
+	void Frame::SetMaxAccelYawOffsetAccel(double value)
 	{
 		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
 		YawPresent = true;
@@ -504,8 +504,8 @@ namespace HLTAS
 		       YawPresent == rhs.YawPresent &&
 		       Yaw == rhs.Yaw &&
 			   Yawspeed == rhs.Yawspeed &&
-			   StartYawspeed == rhs.StartYawspeed &&
-			   TargetYawspeed == rhs.TargetYawspeed &&
+			   StartYawOffset == rhs.StartYawOffset &&
+			   TargetYawOffset == rhs.TargetYawOffset &&
 			   Acceleration == rhs.Acceleration &&
 		       X == rhs.X &&
 		       Y == rhs.Y &&
@@ -689,9 +689,9 @@ extern "C" int hltas_input_get_frame(const void* input, size_t index, hltas_fram
 	if (frame.Type == HLTAS::StrafeType::CONSTYAWSPEED) {
 		c_frame->Yawspeed = frame.Yawspeed;
 	}
-	if (frame.Type == HLTAS::StrafeType::ACCELYAWSPEED) {
-		c_frame->StartYawspeed = frame.StartYawspeed;
-		c_frame->TargetYawspeed = frame.TargetYawspeed;
+	if (frame.Type == HLTAS::StrafeType::MAXACCELYAWOFFSET) {
+		c_frame->StartYawOffset = frame.StartYawOffset;
+		c_frame->TargetYawOffset = frame.TargetYawOffset;
 		c_frame->Acceleration = frame.Acceleration;
 	}
 	c_frame->Pitch = frame.Pitch;

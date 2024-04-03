@@ -44,8 +44,9 @@ namespace HLTAS
 		NO_YAWSPEED,
 		UNSUPPORTED_YAWSPEED_DIR,
 		NEGATIVE_YAWSPEED_VALUE,
-		NO_ACCELERATION_YAWSPEED,
-		UNSUPPORTED_ACCEL_YAWSPEED_DIR
+		NO_YAW_OFFSET,
+		NO_YAW_OFFSET_ACCELERATION,
+		UNSUPPORTED_MAX_ACCEL_YAW_OFFSET_DIR
 	};
 
 	struct ErrorDescription {
@@ -61,7 +62,7 @@ namespace HLTAS
 		MAXDECCEL,
 		CONSTSPEED,
 		CONSTYAWSPEED,
-		ACCELYAWSPEED
+		MAXACCELYAWOFFSET
 	};
 
 	enum class StrafeDir : unsigned char {
@@ -326,7 +327,7 @@ namespace HLTAS
 			unsigned Count;
 			double Yawspeed;
 			struct {
-				double StartYawspeed, TargetYawspeed, Acceleration;
+				double StartYawOffset, TargetYawOffset, Acceleration;
 			};
 		};
 		double Pitch;
@@ -355,13 +356,13 @@ namespace HLTAS
 		void SetPitch(double value);
 		void SetRepeats(unsigned value);
 		// TODO: eh, is it necessary to have this? Right now it is just bad.
-		inline bool HasAcceleratedYawspeedParams() const {return YawPresent && Strafe && Type == StrafeType::ACCELYAWSPEED; }
-		double GetAcceleratedYawspeedStart() const;
-		double GetAcceleratedYawspeedTarget() const;
-		double GetAcceleratedYawspeedAccel() const;
-		void SetAcceleratedYawspeedStart(double value);
-		void SetAcceleratedYawspeedTarget(double value);
-		void SetAcceleratedYawspeedAccel(double value);
+		inline bool HasMaxAccelYawOffsetParams() const {return YawPresent && Strafe && Type == StrafeType::MAXACCELYAWOFFSET; }
+		double GetMaxAccelYawOffsetStart() const;
+		double GetMaxAccelYawOffsetTarget() const;
+		double GetMaxAccelYawOffsetAccel() const;
+		void SetMaxAccelYawOffsetStart(double value);
+		void SetMaxAccelYawOffsetTarget(double value);
+		void SetMaxAccelYawOffsetAccel(double value);
 
 		std::string Commands;
 		std::string Comments;
@@ -517,8 +518,8 @@ extern "C" {
 		double Y;
 		unsigned Count;
 		double Yawspeed;
-		double StartYawspeed;
-		double TargetYawspeed;
+		double StartYawOffset;
+		double TargetYawOffset;
 		double Acceleration;
 		double Pitch;
 		uint32_t Repeats;

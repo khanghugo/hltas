@@ -253,18 +253,16 @@ pub enum StrafeType {
     ConstSpeed,
     /// Turn with constant rate.
     ConstYawspeed(f32),
-    /// Turn with accelerated rate.
+    /// Gain as much speed as possible but each turn has additional yaw.
     ///
-    /// (starting yawspeed, target yawspeed, acceleration)
+    /// (starting yaw offset, target yaw offset, acceleration)
     ///
-    /// Interpretation of starting and target yawspeed are up to implementation.
+    /// Positive acceleration means current yaw offset starts at starting yaw offset, increases by acceleration,
+    /// then caps at target yaw offset.
     ///
-    /// Positive acceleration means current yaw speed starts at starting acceleration, increases acceleration,
-    /// then caps at target acceleration.
-    ///
-    /// Negative acceleration means current yaw speed starts at target acceleration, decreases acceleration,
-    /// then caps at starting acceleration.
-    AcceleratedYawspeed(f32, f32, f32),
+    /// Negative acceleration means current yaw offset starts at target yaw offset, decreases by acceleration,
+    /// then caps at starting yaw offset.
+    MaxAccelerationYawOffset(f32, f32, f32),
 }
 
 /// Direction of automatic strafing.
@@ -547,9 +545,9 @@ fn arbitrary_strafe_settings() -> impl Strategy<Value = AutoMovement> {
             x.type_ = StrafeType::ConstYawspeed(yawspeed.abs());
         }
 
-        if let StrafeType::AcceleratedYawspeed(start, target, accel) = x.type_ {
+        if let StrafeType::MaxAccelerationYawOffset(start, target, accel) = x.type_ {
             x.dir = StrafeDir::Left;
-            x.type_ = StrafeType::AcceleratedYawspeed(start.abs(), target.abs(), accel);
+            x.type_ = StrafeType::MaxAccelerationYawOffset(start, target, accel);
         }
 
         AutoMovement::Strafe(x)
@@ -961,9 +959,9 @@ mod tests {
     test_error! { error_const_yawspeed_negative, "const-yawspeed-negative", NegativeYawspeed }
     test_error! { error_const_yawspeed_unsupported, "const-yawspeed-unsupported", UnsupportedConstantYawspeedDir }
 
-    test_error! { error_accel_yawspeed_singe_yaw, "accel-yawspeed-single-yaw", NoYawspeed }
-    test_error! { error_accel_yawspeed_no_accel, "accel-yawspeed-no-accel", NoAccelerationYawspeed }
-    test_error! { error_accel_yawspeed_unsupported, "accel-yawspeed-unsupported", UnsupportedAccelYawspeedDir }
+    test_error! { error_max_accel_yaw_offset_single_yaw, "max-accel-yaw-offset-single-yaw", NoYawspeed }
+    test_error! { error_max_accel_yaw_offset_no_accel, "max-accel-yaw-offset-no-accel", NoYawOffsetAcceleration }
+    test_error! { error_max_accel_yaw_offset_unsupported, "max-accel-yaw-offset-unsupported", UnsupportedMaxAccelYawOffsetDir }
 
     #[cfg(feature = "proptest1")]
     proptest! {
