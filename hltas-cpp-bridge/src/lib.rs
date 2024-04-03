@@ -128,7 +128,7 @@ impl From<StrafeType> for hltas_cpp::StrafeType {
             MaxDeccel => Self::MAXDECCEL,
             ConstSpeed => Self::CONSTSPEED,
             ConstYawspeed(_) => Self::CONSTYAWSPEED,
-            MaxAccelerationYawOffset(_, _, _) => Self::MAXACCELYAWOFFSET,
+            MaxAccelYawOffset(_, _, _) => Self::MAXACCELYAWOFFSET,
         }
     }
 }
@@ -143,7 +143,7 @@ impl From<hltas_cpp::StrafeType> for StrafeType {
             MAXDECCEL => Self::MaxDeccel,
             CONSTSPEED => Self::ConstSpeed,
             CONSTYAWSPEED => Self::ConstYawspeed(0.),
-            MAXACCELYAWOFFSET => Self::MaxAccelerationYawOffset(0., 0., 0.),
+            MAXACCELYAWOFFSET => Self::MaxAccelYawOffset(0., 0., 0.),
         }
     }
 }
@@ -450,7 +450,7 @@ pub unsafe fn hltas_frame_from_non_comment_line(
                         frame.Yawspeed = f64::from(yawspeed);
                     }
 
-                    if let StrafeType::MaxAccelerationYawOffset(start, target, accel) = type_ {
+                    if let StrafeType::MaxAccelYawOffset(start, target, accel) = type_ {
                         // Need to set this boolean and do get/set methods,
                         // so hlstrafe can directly access the values.
                         frame.YawPresent = true;
@@ -1023,13 +1023,11 @@ unsafe fn hltas_rs_to_writer(
                     hltas_cpp::StrafeType::CONSTYAWSPEED => {
                         StrafeType::ConstYawspeed(frame.Yawspeed as f32)
                     }
-                    hltas_cpp::StrafeType::MAXACCELYAWOFFSET => {
-                        StrafeType::MaxAccelerationYawOffset(
-                            frame.StartYawOffset as f32,
-                            frame.TargetYawOffset as f32,
-                            frame.Acceleration as f32,
-                        )
-                    }
+                    hltas_cpp::StrafeType::MAXACCELYAWOFFSET => StrafeType::MaxAccelYawOffset(
+                        frame.StartYawOffset as f32,
+                        frame.TargetYawOffset as f32,
+                        frame.Acceleration as f32,
+                    ),
                     _ => frame.Type.into(),
                 },
                 dir: match frame.Dir {

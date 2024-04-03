@@ -262,7 +262,7 @@ pub enum StrafeType {
     ///
     /// Negative acceleration means current yaw offset starts at target yaw offset, decreases by acceleration,
     /// then caps at starting yaw offset.
-    MaxAccelerationYawOffset(f32, f32, f32),
+    MaxAccelYawOffset(f32, f32, f32),
 }
 
 /// Direction of automatic strafing.
@@ -543,11 +543,6 @@ fn arbitrary_strafe_settings() -> impl Strategy<Value = AutoMovement> {
         if let StrafeType::ConstYawspeed(yawspeed) = x.type_ {
             x.dir = StrafeDir::Left;
             x.type_ = StrafeType::ConstYawspeed(yawspeed.abs());
-        }
-
-        if let StrafeType::MaxAccelerationYawOffset(start, target, accel) = x.type_ {
-            x.dir = StrafeDir::Left;
-            x.type_ = StrafeType::MaxAccelerationYawOffset(start, target, accel);
         }
 
         AutoMovement::Strafe(x)
@@ -961,7 +956,6 @@ mod tests {
 
     test_error! { error_max_accel_yaw_offset_single_yaw, "max-accel-yaw-offset-single-yaw", NoYawspeed }
     test_error! { error_max_accel_yaw_offset_no_accel, "max-accel-yaw-offset-no-accel", NoYawOffsetAcceleration }
-    test_error! { error_max_accel_yaw_offset_unsupported, "max-accel-yaw-offset-unsupported", UnsupportedMaxAccelYawOffsetDir }
 
     #[cfg(feature = "proptest1")]
     proptest! {

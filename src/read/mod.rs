@@ -78,7 +78,7 @@ pub enum Context {
     NoYawOffset,
     /// Empty yaw offset acceleration.
     NoYawOffsetAcceleration,
-    /// Only side strafe works with max acceleration yaw offset for now.
+    /// Unsupported strafe direction with max acceleration yaw offset.
     UnsupportedMaxAccelYawOffsetDir,
 }
 
