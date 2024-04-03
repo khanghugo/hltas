@@ -56,8 +56,9 @@ pub enum ErrorCode {
     NO_YAWSPEED = 21,
     UNSUPPORTED_YAWSPEED_DIR = 22,
     NEGATIVE_YAWSPEED_VALUE = 23,
-    NO_ACCELERATION_YAWSPEED = 24,
-    UNSUPPORTED_ACCEL_YAWSPEED_DIR = 25,
+    NO_YAW_OFFSET = 24,
+    NO_YAW_OFFSET_ACCELERATION = 25,
+    UNSUPPORTED_MAX_ACCEL_YAW_OFFSET_DIR = 26,
 }
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -108,7 +109,7 @@ pub enum StrafeType {
     MAXDECCEL = 2,
     CONSTSPEED = 3,
     CONSTYAWSPEED = 4,
-    ACCELYAWSPEED = 5,
+    MAXACCELYAWOFFSET = 5,
 }
 #[repr(u8)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -678,8 +679,8 @@ pub struct hltas_frame {
     pub Y: f64,
     pub Count: ::std::os::raw::c_uint,
     pub Yawspeed: f64,
-    pub StartYawspeed: f64,
-    pub TargetYawspeed: f64,
+    pub StartYawOffset: f64,
+    pub TargetYawOffset: f64,
     pub Acceleration: f64,
     pub Pitch: f64,
     pub Repeats: u32,
@@ -1122,23 +1123,23 @@ fn bindgen_test_layout_hltas_frame() {
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).StartYawspeed) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).StartYawOffset) as usize - ptr as usize },
         120usize,
         concat!(
             "Offset of field: ",
             stringify!(hltas_frame),
             "::",
-            stringify!(StartYawspeed)
+            stringify!(StartYawOffset)
         )
     );
     assert_eq!(
-        unsafe { ::std::ptr::addr_of!((*ptr).TargetYawspeed) as usize - ptr as usize },
+        unsafe { ::std::ptr::addr_of!((*ptr).TargetYawOffset) as usize - ptr as usize },
         128usize,
         concat!(
             "Offset of field: ",
             stringify!(hltas_frame),
             "::",
-            stringify!(TargetYawspeed)
+            stringify!(TargetYawOffset)
         )
     );
     assert_eq!(

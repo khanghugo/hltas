@@ -37,7 +37,9 @@ fn strafe_type(i: &str) -> IResult<StrafeType> {
         map(char('2'), |_| StrafeType::MaxDeccel),
         map(char('3'), |_| StrafeType::ConstSpeed),
         map(char('4'), |_| StrafeType::ConstYawspeed(0.)),
-        map(char('5'), |_| StrafeType::AcceleratedYawspeed(0., 0., 0.)),
+        map(char('5'), |_| {
+            StrafeType::MaxAccelerationYawOffset(0., 0., 0.)
+        }),
     ))(i)
 }
 
@@ -335,16 +337,12 @@ fn yaw_field<'a>(
                 _ => (type_, false),
             };
 
-            let (type_, is_accelerated_yawspeed) = match type_ {
-                StrafeType::AcceleratedYawspeed(_, _, _) => {
+            let (type_, is_max_accel_yaw_offset) = match type_ {
+                StrafeType::MaxAccelerationYawOffset(_, _, _) => {
                     // start
                     context(
                         Context::NoYawspeed,
                         not(pair(not(recognize_float), char('-'))),
-                    )(i)?;
-                    context(
-                        Context::NegativeYawspeed,
-                        not(pair(char('-'), recognize_float)),
                     )(i)?;
 
                     // target
@@ -355,16 +353,9 @@ fn yaw_field<'a>(
                             not(recognize_float),
                         )),
                     )(i)?;
-                    context(
-                        Context::NegativeYawspeed,
-                        not(preceded(
-                            pair(recognize_float, space1),
-                            pair(char('-'), recognize_float),
-                        )),
-                    )(i)?;
 
                     context(
-                        Context::NoAccelerationYawspeed,
+                        Context::NoYawOffsetAcceleration,
                         not(preceded(
                             tuple((recognize_float, space1, recognize_float)),
                             not(preceded(space1, recognize_float)),
@@ -379,7 +370,10 @@ fn yaw_field<'a>(
                         preceded(space1, float),
                     )))(i)?;
 
-                    (StrafeType::AcceleratedYawspeed(start, target, accel), true)
+                    (
+                        StrafeType::MaxAccelerationYawOffset(start, target, accel),
+                        true,
+                    )
                 }
                 _ => (type_, false),
             };
@@ -392,8 +386,8 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
-                    if is_accelerated_yawspeed {
-                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    if is_max_accel_yaw_offset {
+                        context(Context::UnsupportedMaxAccelYawOffsetDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, yaw) = float(i)?;
@@ -412,8 +406,8 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
-                    if is_accelerated_yawspeed {
-                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    if is_max_accel_yaw_offset {
+                        context(Context::UnsupportedMaxAccelYawOffsetDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, yaw) = float(i)?;
@@ -432,8 +426,8 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
-                    if is_accelerated_yawspeed {
-                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    if is_max_accel_yaw_offset {
+                        context(Context::UnsupportedMaxAccelYawOffsetDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, (x, y)) = separated_pair(float, space1, float)(i)?;
@@ -455,8 +449,8 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
-                    if is_accelerated_yawspeed {
-                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    if is_max_accel_yaw_offset {
+                        context(Context::UnsupportedMaxAccelYawOffsetDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, count) = non_zero_u32(i)?;
@@ -478,8 +472,8 @@ fn yaw_field<'a>(
                         context(Context::UnsupportedConstantYawspeedDir, fail::<_, &str, _>)(i)?;
                     }
 
-                    if is_accelerated_yawspeed {
-                        context(Context::UnsupportedAccelYawspeedDir, fail::<_, &str, _>)(i)?;
+                    if is_max_accel_yaw_offset {
+                        context(Context::UnsupportedMaxAccelYawOffsetDir, fail::<_, &str, _>)(i)?;
                     }
 
                     let (i, count) = non_zero_u32(i)?;
@@ -495,7 +489,7 @@ fn yaw_field<'a>(
                     // Skip the field if constant yawspeed and side strafing.
                     let (i, _) = if is_constant_yawspeed {
                         recognize_float(i)?
-                    } else if is_accelerated_yawspeed {
+                    } else if is_max_accel_yaw_offset {
                         preceded(
                             tuple((
                                 recognize_float,
@@ -1123,24 +1117,24 @@ mod tests {
     }
 
     #[test]
-    fn accelerated_yawspeed_parse() {
+    fn max_accel_yaw_offset_parse() {
         let input = "0 69 -78.69";
 
         yaw_field(Some(AutoMovement::Strafe(StrafeSettings {
-            type_: StrafeType::AcceleratedYawspeed(0., 0., 0.),
+            type_: StrafeType::MaxAccelerationYawOffset(0., 0., 0.),
             dir: StrafeDir::Left,
         })))(input)
         .unwrap()
         .1
         .map(|what| {
-            if let AutoMovement::Strafe(StrafeSettings { type_, .. }) = what {
-                if let StrafeType::AcceleratedYawspeed(start, target, accel) = type_ {
-                    assert_eq!(start, 0.);
-                    assert_eq!(target, 69.0);
-                    assert_eq!(accel, -78.69)
-                } else {
-                    unreachable!()
-                }
+            if let AutoMovement::Strafe(StrafeSettings {
+                type_: StrafeType::MaxAccelerationYawOffset(start, target, accel),
+                ..
+            }) = what
+            {
+                assert_eq!(start, 0.);
+                assert_eq!(target, 69.0);
+                assert_eq!(accel, -78.69)
             } else {
                 unreachable!()
             }

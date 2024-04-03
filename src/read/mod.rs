@@ -74,10 +74,12 @@ pub enum Context {
     UnsupportedConstantYawspeedDir,
     /// Negative yawspeed value.
     NegativeYawspeed,
-    /// Empty accelerated yaw speed.
-    NoAccelerationYawspeed,
-    /// Only side strafe works with accelerated yawspeed now.
-    UnsupportedAccelYawspeedDir,
+    /// Empty yaw offset.
+    NoYawOffset,
+    /// Empty yaw offset acceleration.
+    NoYawOffsetAcceleration,
+    /// Only side strafe works with max acceleration yaw offset for now.
+    UnsupportedMaxAccelYawOffsetDir,
 }
 
 /// `.hltas` parsing error.
@@ -143,11 +145,17 @@ impl Display for Context {
             NegativeYawspeed => {
                 write!(f, "yawspeed value is negative")
             }
-            NoAccelerationYawspeed => {
-                write!(f, "no acceleration give")
+            NoYawOffset => {
+                write!(f, "missing yaw offset value")
             }
-            UnsupportedAccelYawspeedDir => {
-                write!(f, "cannot pair accelerted yawspeed with current strafe dir")
+            NoYawOffsetAcceleration => {
+                write!(f, "missing yaw offset acceleration value")
+            }
+            UnsupportedMaxAccelYawOffsetDir => {
+                write!(
+                    f,
+                    "cannot pair max acceleration yaw offset with current strafe direction"
+                )
             }
         }
     }
