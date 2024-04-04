@@ -328,7 +328,7 @@ namespace HLTAS
 	void Frame::SetMaxAccelYawOffsetStart(double value)
 	{
 		// I don't remember why checking for `Strafe`, let's just parrot.
-		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
+		assert(!Strafe || Type == StrafeType::MAXACCELYAWOFFSET);
 		YawPresent = true;
 		StartYawOffset = value;
 	}
@@ -336,14 +336,14 @@ namespace HLTAS
 	void Frame::SetMaxAccelYawOffsetTarget(double value)
 	{
 		// I don't remember why checking for `Strafe`, let's just parrot.
-		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
+		assert(!Strafe || Type == StrafeType::MAXACCELYAWOFFSET);
 		YawPresent = true;
 		TargetYawOffset = value;
 	}
 
 	void Frame::SetMaxAccelYawOffsetAccel(double value)
 	{
-		assert(!Strafe || Type == Strafe::ACCELYAWSPEED);
+		assert(!Strafe || Type == StrafeType::MAXACCELYAWOFFSET);
 		YawPresent = true;
 		Acceleration = value;
 	}

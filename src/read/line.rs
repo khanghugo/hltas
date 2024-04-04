@@ -410,8 +410,6 @@ fn yaw_field<'a>(
                 // After parsing StrafeDir and its value, it will then parse some other values
                 // inside yaw field.
                 StrafeType::MaxAccelYawOffset(_, _, _) => {
-                    // Must be preceded by space1.
-
                     // start
                     context(
                         Context::NoYawspeed,
@@ -1086,6 +1084,32 @@ mod tests {
                 assert_eq!(start, 0.);
                 assert_eq!(target, 69.0);
                 assert_eq!(accel, -78.69)
+            } else {
+                unreachable!()
+            }
+        });
+    }
+
+    #[test]
+    fn max_accel_yaw_offset_parse_yaw() {
+        let input = "10 0 69 -78.69";
+
+        yaw_field(Some(AutoMovement::Strafe(StrafeSettings {
+            type_: StrafeType::MaxAccelYawOffset(0., 0., 0.),
+            dir: StrafeDir::Yaw(0.),
+        })))(input)
+        .unwrap()
+        .1
+        .map(|what| {
+            if let AutoMovement::Strafe(StrafeSettings {
+                type_: StrafeType::MaxAccelYawOffset(start, target, accel),
+                dir: StrafeDir::Yaw(yaw),
+            }) = what
+            {
+                assert_eq!(start, 0.);
+                assert_eq!(target, 69.0);
+                assert_eq!(accel, -78.69);
+                assert_eq!(yaw, 10.);
             } else {
                 unreachable!()
             }

@@ -326,10 +326,8 @@ namespace HLTAS
 			};
 			unsigned Count;
 			double Yawspeed;
-			struct {
-				double StartYawOffset, TargetYawOffset, Acceleration;
-			};
 		};
+		double StartYawOffset, TargetYawOffset, Acceleration;
 		double Pitch;
 
 		unsigned Repeats;
