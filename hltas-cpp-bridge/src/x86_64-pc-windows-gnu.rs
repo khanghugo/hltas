@@ -718,11 +718,7 @@ fn bindgen_test_layout_hltas_frame() {
     let ptr = UNINIT.as_ptr();
     assert_eq!(
         ::std::mem::size_of::<hltas_frame>(),
-<<<<<<< HEAD
-        320usize,
-=======
-        328usize,
->>>>>>> fork/pitch_override
+        352usize,
         concat!("Size of: ", stringify!(hltas_frame))
     );
     assert_eq!(
@@ -1412,7 +1408,7 @@ fn bindgen_test_layout_hltas_frame() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).PitchOverride) as usize - ptr as usize },
-        296usize,
+        320usize,
         concat!(
             "Offset of field: ",
             stringify!(hltas_frame),
@@ -1422,7 +1418,7 @@ fn bindgen_test_layout_hltas_frame() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).PitchOverrideCount) as usize - ptr as usize },
-        304usize,
+        328usize,
         concat!(
             "Offset of field: ",
             stringify!(hltas_frame),
@@ -1432,7 +1428,7 @@ fn bindgen_test_layout_hltas_frame() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).RenderPitchOverride) as usize - ptr as usize },
-        312usize,
+        336usize,
         concat!(
             "Offset of field: ",
             stringify!(hltas_frame),
@@ -1442,7 +1438,7 @@ fn bindgen_test_layout_hltas_frame() {
     );
     assert_eq!(
         unsafe { ::std::ptr::addr_of!((*ptr).RenderPitchOverrideCount) as usize - ptr as usize },
-        320usize,
+        344usize,
         concat!(
             "Offset of field: ",
             stringify!(hltas_frame),
