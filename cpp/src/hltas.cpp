@@ -122,6 +122,8 @@ namespace HLTAS
 		ChangeOver = c_frame.ChangeOver;
 		TargetYawOverride = std::vector<float>(c_frame.TargetYawOverride, c_frame.TargetYawOverride + c_frame.TargetYawOverrideCount);
 		RenderYawOverride = std::vector<float>(c_frame.RenderYawOverride, c_frame.RenderYawOverride + c_frame.RenderYawOverrideCount);
+		PitchOverride = std::vector<float>(c_frame.PitchOverride, c_frame.PitchOverride + c_frame.PitchOverrideCount);
+		RenderPitchOverride = std::vector<float>(c_frame.RenderPitchOverride, c_frame.RenderPitchOverride + c_frame.RenderPitchOverrideCount);
 	}
 
 	bool Frame::IsMovement() const {
@@ -134,7 +136,9 @@ namespace HLTAS
 			&& !AlgorithmParametersPresent
 			&& !ChangePresent
 			&& TargetYawOverride.empty()
-			&& RenderYawOverride.empty();
+			&& RenderYawOverride.empty()
+			&& PitchOverride.empty()
+			&& RenderPitchOverride.empty();
 	}
 
 	void Frame::ResetAutofuncs()
@@ -722,6 +726,10 @@ extern "C" int hltas_input_get_frame(const void* input, size_t index, hltas_fram
 	c_frame->TargetYawOverrideCount = frame.TargetYawOverride.size();
 	c_frame->RenderYawOverride = frame.RenderYawOverride.data();
 	c_frame->RenderYawOverrideCount = frame.RenderYawOverride.size();
+	c_frame->PitchOverride = frame.PitchOverride.data();
+	c_frame->PitchOverrideCount = frame.PitchOverride.size();
+	c_frame->RenderPitchOverride = frame.RenderPitchOverride.data();
+	c_frame->RenderPitchOverrideCount = frame.RenderPitchOverride.size();
 
 	return 0;
 }
